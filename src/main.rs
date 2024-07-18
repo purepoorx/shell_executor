@@ -34,7 +34,7 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .service(execute_script)
     })
-        .bind("127.0.0.1:8888")?
+        .bind("0.0.0.0:8888")?
         .run()
         .await
 }
