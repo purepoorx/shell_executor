@@ -7,23 +7,24 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        build: [linux, macos, windows]
+#        build: [linux, macos, windows]
+        build: [linux]
         include:
           - build: linux
             os: ubuntu-latest
             rust: nightly
             target: x86_64-unknown-linux-musl
             archive-name: shell_executor-linux.tar.gz
-          - build: macos
-            os: macos-latest
-            rust: nightly
-            target: x86_64-apple-darwin
-            archive-name: shell_executor-macos.tar.gz
-          - build: windows
-            os: windows-latest
-            rust: nightly-x86_64-msvc
-            target: x86_64-pc-windows-msvc
-            archive-name: shell_executor-windows.7z
+#          - build: macos
+#            os: macos-latest
+#            rust: nightly
+#            target: x86_64-apple-darwin
+#            archive-name: shell_executor-macos.tar.gz
+#          - build: windows
+#            os: windows-latest
+#            rust: nightly-x86_64-msvc
+#            target: x86_64-pc-windows-msvc
+#            archive-name: shell_executor-windows.7z
       fail-fast: false
 
     steps:
@@ -50,20 +51,29 @@ jobs:
         if: matrix.build == 'linux' || matrix.build == 'macos'
         run: strip "target/${{ matrix.target }}/release/shell_executor"
 
-      - name: Build archive
-        shell: bash
-        run: |
-          mkdir archive
-          cd archive
-          if [ "${{ matrix.build }}" = "windows" ]; then
-            cp "../target/${{ matrix.target }}/release/shell_executor.exe" ./
-            7z a "${{ matrix.archive-name }}" shell_executor.exe
-          else
-            cp "../target/${{ matrix.target }}/release/shell_executor" ./
-            tar -czf "${{ matrix.archive-name }}" shell_executor
-          fi
-      - name: Upload archive
-        uses: actions/upload-artifact@v1
+#      - name: Build archive
+#        shell: bash
+#        run: |
+#          mkdir archive
+#          cd archive
+#          if [ "${{ matrix.build }}" = "windows" ]; then
+#            cp "../target/${{ matrix.target }}/release/shell_executor.exe" ./
+#            7z a "${{ matrix.archive-name }}" shell_executor.exe
+#          else
+#            cp "../target/${{ matrix.target }}/release/shell_executor" ./
+#            tar -czf "${{ matrix.archive-name }}" shell_executor
+#          fi
+#      - name: Upload archive
+#        uses: actions/upload-artifact@v1
+#        with:
+#          name: ${{ matrix.archive-name }}
+#          path: archive/${{ matrix.archive-name }}
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v2
         with:
-          name: ${{ matrix.archive-name }}
-          path: archive/${{ matrix.archive-name }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ../target/${{ matrix.target }}/release/shell_executor
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
