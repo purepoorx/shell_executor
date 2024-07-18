@@ -1,5 +1,5 @@
 use serde_derive::Deserialize;
-use actix_web::{post, web, App, HttpServer, Responder, HttpResponse};
+use actix_web::{get, post, web, App, HttpServer, Responder, HttpResponse};
 use std::process::Command;
 
 #[derive(Deserialize)]
@@ -28,10 +28,16 @@ async fn execute_script(req_body: web::Json<ScriptRequest>) -> impl Responder {
     }
 }
 
+#[get("/")]
+async fn welcome() -> impl Responder {
+    HttpResponse::Ok().body("Welcome to the Shell Executor Service!")
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            .service(welcome)
             .service(execute_script)
     })
         .bind("0.0.0.0:8888")?
